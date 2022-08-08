@@ -16,6 +16,7 @@ class Player {
     this.votesFor = 0
     this.registeredVote = null
     this.lastwill = null
+    this.listeWhisp = []
     this.note = null
     this.action = null
     this.actiondone = false
