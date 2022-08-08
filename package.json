@@ -1,0 +1,19 @@
+{
+  "name": "tos2",
+  "version": "1.0.0",
+  "description": "TOS V2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maladarix/TOS2.git"
+  },
+  "author": "Maladarix",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maladarix/TOS2/issues"
+  },
+  "homepage": "https://github.com/maladarix/TOS2#readme"
+}
