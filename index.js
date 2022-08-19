@@ -1,6 +1,6 @@
 const Discord = require("discord.js")
 const bot = new Discord.Client({intents: 3276799})
-const {SlashCommandBuilder, EmbedBuilder} = require('discord.js')
+const {SlashCommandBuilder, EmbedBuilder, ChannelType} = require('discord.js')
 
 const Commands = require('./src/commands.js');
 const Player = require('./src/player.js');
@@ -218,7 +218,7 @@ let clearJail = async function(jailedChan){
 
 }
 
-var kill = function(died) {
+var kill = async function(died) {
   let graveyardmot = new EmbedBuilder()
   .setDescription(`Le lastwill de **${died.displayname}** était: 
   ${died.lastwillappear}`)
@@ -247,7 +247,8 @@ var kill = function(died) {
     }
   }
 
-  let joueur = bot.guilds.cache.get(guildId).members.fetch(died.id)
+  let joueur = await bot.guilds.cache.get(guildId).members.fetch(died.id)
+  console.log(joueur)
   died.necro = false
   joueur.roles.add(mort)
   joueur.roles.add(spec)
@@ -260,7 +261,7 @@ var processVote = function() {
   var targetedPlayer = [alive()[0]]
   alive().forEach(player => {
         player.id,
-        {VIEW_CHANNEL: true, SEND_MESSAGES: false}
+        {ViewChannel: true, SendMessages: false}
     if (player.id != targetedPlayer[0].id){
       if(targetedPlayer[0].votesFor < player.votesFor){
         targetedPlayer = [player]
@@ -302,9 +303,20 @@ var processVote = function() {
   }
 }
 
+var arrToString = function (arr) {
+  let result = ""
+  arr.forEach(element => {
+    result += `${element} \n`
+  });
+  return result
+}
+
 setInterval( //!résults automatique
   () => {
     if(partie.numJour == 0 || partie.numJour == -1) return
+    console.log(new Date().toUTCString().split(" ")[4])
+    console.log(partie.HeureResults)
+    console.log('==========')
     if(new Date().toUTCString().split(" ")[4] == partie.HeureResults) {
       processVote()
     }
@@ -357,7 +369,7 @@ bot.on("messageCreate", async (message) => {
       if(partie.whispersChannels[i].nb == 0) {
         chan.permissionOverwrites.forEach(e => {
           if(e.type == "member") {
-            e.update({"SEND_MESSAGES": false})
+            e.update({"SendMessages": false})
           }
         });
         message.channel.send({embeds: [new EmbedBuilder()
@@ -840,71 +852,71 @@ bot.on("messageCreate", async (message) => {
       joueur.roles.remove(nuit)
     }
 
-    mafiaChan.overwritePermissions([
+    mafiaChan.permissionOverwrites.set([
       {
         id: jour,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       },{ 
         id: message.guild.id,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       },{
         id: vivant,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       },{
         id: spec,
-        allow: ['VIEW_CHANNEL'],
-        deny: ['SEND_MESSAGES'],
+        allow: [Discord.PermissionsBitField.Flags.ViewChannel],
+        deny: ['SendMessages'],
       },{
         id: mort,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       }
     ])
-    jailChan.overwritePermissions([
+    jailChan.permissionOverwrites.set([
       {
         id: message.guild.id,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       },{
         id: vivant,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       },{
         id: spec,
-        allow: ['VIEW_CHANNEL'],
-        deny: ['SEND_MESSAGES'],
+        allow: [Discord.PermissionsBitField.Flags.ViewChannel],
+        deny: ['SendMessages'],
       },{
         id: mort,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       }
     ])
-    spyChan.overwritePermissions([
+    spyChan.permissionOverwrites.set([
       {
         id: message.guild.id,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       },{
         id: vivant,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       },{
         id: spec,
-        allow: ['VIEW_CHANNEL'],
-        deny: ['SEND_MESSAGES'],
+        allow: [Discord.PermissionsBitField.Flags.ViewChannel],
+        deny: ['SendMessages'],
       },{
         id: mort,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       }
     ])
-    covenchan.overwritePermissions([
+    covenchan.permissionOverwrites.set([
       {
         id: message.guild.id,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       },{
         id: vivant,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       },{
         id: spec,
-        allow: ['VIEW_CHANNEL'],
-        deny: ['SEND_MESSAGES'],
+        allow: [Discord.PermissionsBitField.Flags.ViewChannel],
+        deny: ['SendMessages'],
       },{
         id: mort,
-        deny: ['VIEW_CHANNEL'],
+        deny: [Discord.PermissionsBitField.Flags.ViewChannel],
       }
     ])
 
@@ -922,21 +934,21 @@ bot.on("messageCreate", async (message) => {
 
     listejoueur = []
     start = false
+    numjoueur = 0
     partie = new Partie()
     message.channel.send({embeds: [gameend]})
 
   }
 
   if(cmd == "test") {
-    let test = new EmbedBuilder().setTitle("test")
-    message.channel.send({embeds: [test]})
   }
   
   else if(cmd == "heurevote") {
     if(!god && !dev) return message.channel.send({embeds: [pasGod]})
     if(start == true) return message.channel.send({embeds: [commencee]})
     if(!args[0]) return message.channel.send("Quelle heure?")
-    let offset = 5
+    let offset = 4
+    console.log(new Date().getTimezoneOffset())
     if(new Date().getTimezoneOffset() == 0) {
       offset = 4
     }
@@ -1002,7 +1014,7 @@ bot.on("messageCreate", async (message) => {
   
   else if(cmd == "lastwill") {
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
-    if(!message.member.roles._roles.has(vivant)) return message.channel.send({embeds: [tpasvivant]})
+    if(!message.member.roles.member._roles.includes(vivant)) return message.channel.send({embeds: [tpasvivant]})
     var messageLW = "" 
     if(args.length >= 1 && taggedUser == null) {
       args.forEach(mot => {
@@ -1046,7 +1058,7 @@ bot.on("messageCreate", async (message) => {
 
   else if(cmd == "note") {
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
-    if(!message.member.roles._roles.has(vivant)) return message.channel.send({embeds: [tpasvivant]})
+    if(!message.member.roles.member._roles.includes(vivant)) return message.channel.send({embeds: [tpasvivant]})
     var messageNote = "" 
     if(args.length >= 1 && taggedUser == null) {
       args.forEach(mot => {
@@ -1102,7 +1114,6 @@ bot.on("messageCreate", async (message) => {
   else if(cmd == "forger") {
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
     if(!god && !dev) return message.channel.send({embeds: [pasGod]})
-    if(!taggedUser.roles.cache.has(vivant)) return message.channel.send({embeds: [pasVivant]})
     if(!args[1]) return message.channel.send({embeds: [new EmbedBuilder()
     .setDescription("Quel rôle?")
     .setColor(color)]})
@@ -1310,36 +1321,32 @@ bot.on("messageCreate", async (message) => {
           .setColor(color)
 
           let interfaces = tagged.user.displayName
-          message.guild.channels.create(interfaces + " Interface",{type:"text",})
-          .then((channel) => {
-            channel.setParent(parentInterface)
-            channel.overwritePermissions([
+          message.guild.channels.create({name: interfaces + " Interface", parent: parentInterface, topic: `<@&${godId}> pour avoir de l'aide direct`, permissionOverwrites: [
             {
-              id: channel.guild.id,
-              deny: ['VIEW_CHANNEL'],
+              id: message.guild.id,
+              deny: ['ViewChannel'],
             },
             {
               id: vivant,
-              deny: ['VIEW_CHANNEL'],
+              deny: ['ViewChannel'],
             },{
               id: tagged.id,
-              allow: ['VIEW_CHANNEL'],
+              allow: ['ViewChannel'],
             },{
               id: spec,
-              allow: ['VIEW_CHANNEL'],
-              deny: ['SEND_MESSAGES'],
+              allow: ['ViewChannel'],
+              deny: ['SendMessages'],
             },{
               id: mort,
-              deny: ['VIEW_CHANNEL'],
+              deny: ['ViewChannel'],
             }
-            ])
-            .then(setTimeout(() => {
-              channel.send({embeds: [messainter]})
-            }, 1500))
+          ]}).then(channel => {
             tagged.interface = channel.id
             partie.interfaces.push(channel.id)
-            channel.setTopic(`<@&${godId}> pour avoir de l'aide direct`)
-            })
+            setTimeout(() => {
+              channel.send({embeds: [messainter]})
+            }, 1500);
+          })
             
             if(alive().length == nbrJoueurMax){
               partie.isStarted = true
@@ -1418,7 +1425,7 @@ bot.on("messageCreate", async (message) => {
       args.forEach(mots => {
         messagenuit += mots + " "
       });
-      gameannoncchan.send({embeds: [messagenuit]})
+      gameannoncchan.send(messagenuit)
     }
     partie.time = "nuit"
     partie.numNuit ++
@@ -1491,32 +1498,32 @@ bot.on("messageCreate", async (message) => {
       player.whispRemaining = null
 
       if(player.role.alignement == "Mafia Support" || player.role.alignement == "Mafia Killing" || player.role.alignement == "Mafia Deception") {
-        mafiaChan.updateOverwrite(
+        mafiaChan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+          {ViewChannel: true, SendMessages: true}
         )
       }else if(player.role.name == "Vampire") {
-        vampirechan.updateOverwrite(
+        vampirechan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+          {ViewChannel: true, SendMessages: true}
         )
       }else if(player.role.name == "Vampire-Hunter") {
-        observatoirechan.updateOverwrite(
+        observatoirechan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+          {ViewChannel: true, SendMessages: true}
         )
       }else if(player.role.alignement == "Coven Evil") {
-        covenchan.updateOverwrite(
+        covenchan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+          {ViewChannel: true, SendMessages: true}
         )  
       }
     });
 
     if(partie.traitor == true) {
-      mafiaChan.updateOverwrite(
+      mafiaChan.permissionOverwrites.edit(
         partie.traitre.id,
-        {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+        {ViewChannel: true, SendMessages: true}
       )
     }
 
@@ -1529,21 +1536,21 @@ bot.on("messageCreate", async (message) => {
     partie.whispersChannels = []
 
     if(partie.jailed != "") {
-      jailedChan.updateOverwrite(
+      jailedChan.permissionOverwrites.edit(
       partie.jailed.id,
-      {"VIEW_CHANNEL": true})
+      {"ViewChannel": true})
 
-      mafiaChan.updateOverwrite(
+      mafiaChan.permissionOverwrites.edit(
       partie.jailed.id,
-      {"VIEW_CHANNEL": false})
+      {"ViewChannel": false})
 
-      spyChan.updateOverwrite(
+      spyChan.permissionOverwrites.edit(
       partie.jailed.id,
-      {"VIEW_CHANNEL": false})
+      {"ViewChannel": false})
 
-      covenchan.updateOverwrite(
+      covenchan.permissionOverwrites.edit(
       partie.jailed.id,
-      {"VIEW_CHANNEL": false})
+      {"ViewChannel": false})
      
       jailedChan.send(`<@${partie.jailed.id}> Vous êtes en prison, défendez vous pour éviter que le jailor vous exécute! ⛓️`)
       if(partie.jailed.role.alignement == "Coven Evil") {
@@ -1566,10 +1573,9 @@ bot.on("messageCreate", async (message) => {
 
     let whisp0 = new EmbedBuilder()
     .setDescription("Tu ne peux pas whisp jour **0**")
-    .setColor(color)
-    
+    .setColor(color) 
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
-    if(!message.member.roles._roles.has(vivant)) return message.channel.send({embeds: [tpasvivant]})
+    if(!message.member.roles.member._roles.includes(vivant)) return message.channel.send({embeds: [tpasvivant]})
     if(message.channel.name != dmChan.name) return message.channel.send({embeds: [demWhisp]})
     if(partie.numJour == 0) return message.channel.send({embeds: [whisp0]})
     if(partie.time == "nuit") return message.channel.send({embeds: [nuitembed]})
@@ -1598,31 +1604,29 @@ bot.on("messageCreate", async (message) => {
     let channelName = `${demandé} et ${authorwhisp}`
     author.whispRemaining--
 
-    message.guild.channels.create(channelName,{type:"text",})
-    .then((channel) => {
-    channel.setParent(parentwhisp)
-    channel.overwritePermissions([
-    {
-      id: channel.guild.id,
-      deny: ['VIEW_CHANNEL'],
-    },{
-      id: vivant,
-      deny: ['VIEW_CHANNEL'],
-    },{
-      id: author.id,
-      allow: ['VIEW_CHANNEL'],
-    },{
-      id: tagged.id,
-      allow: ['VIEW_CHANNEL'],
-    },{
-      id: spec,
-      allow: ['VIEW_CHANNEL'],
-      deny: ['SEND_MESSAGES'],
-    },{
-      id: godId,
-      allow: ['VIEW_CHANNEL']
-    }
-    ])
+    message.guild.channels.create({name: channelName, parent: parentwhisp, permissionOverwrites: [
+      {
+        id: message.guild.id,
+        deny: ['ViewChannel'],
+      },{
+        id: vivant,
+        deny: ['ViewChannel'],
+      },{
+        id: author.id,
+        allow: ['ViewChannel'],
+      },{
+        id: tagged.id,
+        allow: ['ViewChannel'],
+      },{
+        id: spec,
+        allow: ['ViewChannel'],
+        deny: ['SendMessages'],
+      },{
+        id: godId,
+        allow: ['ViewChannel']
+      }
+    ]}).then(channel => {
+      
     if(author.role.name == "Maire") {
       partie.whispmaire.push(channel.id)
     }
@@ -1639,7 +1643,7 @@ bot.on("messageCreate", async (message) => {
 
     listerolechan.send({embeds: [new EmbedBuilder()
     .setTitle(`**Partie en cours: ${partie.gamemode.name}**`)
-    .setDescription(partie.gamemode.list)
+    .setDescription(partie.gamemode.list.toString())
     .setColor(color)]})
 
     Commands.prototype.start(partie, alive())
@@ -1656,45 +1660,45 @@ bot.on("messageCreate", async (message) => {
     alive().forEach(player => {
       let interfacechan = message.guild.channels.cache.get(player.interface)
       if(player.role.name == "Jailor") {
-        jailChan.updateOverwrite(
+        jailChan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true}
+          {ViewChannel: true}
         )
       }else if(player.role.name == "Agent-Infiltre") {
-        spyChan.updateOverwrite(
+        spyChan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true}
+          {ViewChannel: true}
         )
         mafiaChan.send(`Vous sentez que vous ne pouvez pas parler en privé. <@&${vivant}>`)
       }else if(player.role.name == "Vampire") {
-        vampirechan.updateOverwrite(
+        vampirechan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+          {ViewChannel: true, SendMessages: true}
         )
       }else if(player.role.name == "Vampire-Hunter") {
-        observatoirechan.updateOverwrite(
+        observatoirechan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true}
+          {ViewChannel: true}
         )
       }else if(player.role.alignement == "Mafia Killing") {
-        mafiaChan.updateOverwrite(
+        mafiaChan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+          {ViewChannel: true, SendMessages: true}
         )
       }else if(player.role.alignement == "Mafia Support") {
-        mafiaChan.updateOverwrite(
+        mafiaChan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+          {ViewChannel: true, SendMessages: true}
         )
       }else if(player.role.alignement == "Mafia Deception") {
-        mafiaChan.updateOverwrite(
+        mafiaChan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+          {ViewChannel: true, SendMessages: true}
         )
       }else if(player.role.alignement == "Coven Evil") {
-        covenchan.updateOverwrite(
+        covenchan.permissionOverwrites.edit(
           player.id,
-          {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+          {ViewChannel: true, SendMessages: true}
         )
 
         partie.joueurCoven.push(player)
@@ -1760,6 +1764,8 @@ bot.on("messageCreate", async (message) => {
 
       }else{
         interfacechan.send({embeds: [new EmbedBuilder()
+          .setTitle("**Ton rôle**")
+          .setDescription("**Voici des infos sur ton rôle**")
           .addFields([
             {name:"**Ton rôle**", value: player.role.name},
             {name:"**Allignement**", value: player.role.alignement},
@@ -1781,9 +1787,9 @@ bot.on("messageCreate", async (message) => {
 
     if(partie.traitor == true) {
       partie.traitre = shuffle(listeTown)[Math.floor(Math.random() * listeTown.length)]
-      mafiaChan.updateOverwrite(
+      mafiaChan.permissionOverwrites.edit(
         partie.traitre.id,
-        {VIEW_CHANNEL: true, SEND_MESSAGES: true}
+        {ViewChannel: true, SendMessages: true}
       )
       bot.channels.cache.get(partie.traitre.interface).send({embeds: [new EmbedBuilder()
         .setDescription("**Tu es le traitre de la town! Tu es en équipe avec la mafia!**")
@@ -1798,18 +1804,18 @@ bot.on("messageCreate", async (message) => {
 
     adminchannel.send({embeds: [new EmbedBuilder()
     .setTitle("**Liste des joueurs avec leurs roles**")
-    .setDescription(joueurroles)
+    .setDescription(arrToString(joueurroles))
     .setColor(color)]})
 
     adminchannel.send({embeds: [new EmbedBuilder()
     .setTitle(`Liste de rôle: **(${partie.gamemode.name})**`)
-    .setDescription(listeroles)
+    .setDescription(arrToString(listeroles))
     .setColor(color)]})
 
     listerolechan.send({embeds: [new EmbedBuilder()
     .setTitle("Le numéro des joueurs")
-      .setDescription(joueuretnum)
-      .setColor(color)]})
+    .setDescription(arrToString(joueuretnum))
+    .setColor(color)]})
 
     partie.time = "jour"
     partie.numJour ++
@@ -1926,57 +1932,57 @@ bot.on("messageCreate", async (message) => {
           }
         }
         if(good == true) {
-          if(arguments == "ti") {
+          if(argument == "ti") {
             nouvgmliste.push("Town Investigative")
             checkunique.push("ti")
-          }else if(arguments == "tp") {
+          }else if(argument == "tp") {
             nouvgmliste.push("Town Protective")
             checkunique.push("tp")
-          }else if(arguments == "ts") {
+          }else if(argument == "ts") {
             nouvgmliste.push("Town Support")
             checkunique.push("ts")
-          }else if(arguments == "tk") {
+          }else if(argument == "tk") {
             nouvgmliste.push("Town Killing")
             checkunique.push("tk")
-          }else if(arguments == "md") {
+          }else if(argument == "md") {
             nouvgmliste.push("Mafia Deception")
             checkunique.push("md")
-          }else if(arguments == "ms") {
+          }else if(argument == "ms") {
             nouvgmliste.push("Mafia Support")
             checkunique.push("ms")
-          }else if(arguments == "mk") {
+          }else if(argument == "mk") {
             nouvgmliste.push("Mafia Killing")
             checkunique.push("mk")
-          }else if(arguments == "nb") {
+          }else if(argument == "nb") {
             nouvgmliste.push("Neutral Benin")
             checkunique.push("nb")
-          }else if(arguments == "nk") {
+          }else if(argument == "nk") {
             nouvgmliste.push("Neutral Killing")
             checkunique.push("nk")
-          }else if(arguments == "ne") {
+          }else if(argument == "ne") {
             nouvgmliste.push("Neutral Evil")
             checkunique.push("ne")
-          }else if(arguments == "nc") {
+          }else if(argument == "nc") {
             nouvgmliste.push("Neutral Chaos")
             checkunique.push("nc")
-          }else if(arguments == "rt") {
+          }else if(argument == "rt") {
             nouvgmliste.push("Random Town")
             checkunique.push("rt")
-          }else if(arguments == "rm") {
+          }else if(argument == "rm") {
             nouvgmliste.push("Random Mafia")
             checkunique.push("rm")
-          }else if(arguments == "rn") {
+          }else if(argument == "rn") {
             nouvgmliste.push("Random Neutral")
             checkunique.push("rn")
-          }else if(arguments == "any") {
+          }else if(argument == "any") {
             nouvgmliste.push("Any")
             checkunique.push("any")
-          }else if(arguments == "ce") {
+          }else if(argument == "ce") {
             nouvgmliste.push("Coven Evil")
             checkunique.push("ce")
           }else{
-            nouvgmliste.push(arguments)
-            checkunique.push(arguments)
+            nouvgmliste.push(argument)
+            checkunique.push(argument)
           }
         }
       }else{
@@ -1989,10 +1995,13 @@ bot.on("messageCreate", async (message) => {
       partie.persoGm = nouvgmoffi
       partie.personom = args[0]
 
-      console.log(nouvgmoffi)
+      let custom = ""
+      nouvgmoffi.forEach(element => {
+        custom += `${element}\n`
+      });
       message.channel.send({embeds: [new EmbedBuilder()
       .setTitle(`Gamemode: ${args[0]}`)
-      .setDescription("nouvgmoffi")
+      .setDescription(custom)
       .addFields({name: "Nombre de joueurs", value: (args.length - 1).toString()})
       .setColor(color)]})
       nomgamemode = args[0]
@@ -2275,10 +2284,10 @@ bot.on("messageCreate", async (message) => {
   }
 });
 
-bot.on('message', async (message) => {
+bot.on('messageCreate', async (message) => {
   if(message.author.bot) return
   if(!message.content.startsWith(prefix)) return
-  var taggedUser = message.mentions.members.array()
+  var taggedUser = message.mentions.members
   var god = message.member.roles.cache.has(godId)
   var dev = message.member.roles.cache.has(devid)
   let jailChan = message.guild.channels.cache.get(jail)
@@ -2309,7 +2318,6 @@ bot.on('message', async (message) => {
 
   if(cmd == "start"){
     if(!god && !dev) return message.channel.send({embeds: [pasGod]})
-
     if(partie.isStarted == true) return message.channel.send({embeds: [new EmbedBuilder()
     .setDescription("La partie est déja commencée!")
     .setColor(color)]})
@@ -2361,7 +2369,7 @@ bot.on('message', async (message) => {
     **Nombre de message par whisp:** ${partie.nbMsgWhisp}
     **Message start:** ${messageJouer}
     **Liste de rôles:** ${partie.gamemode.list}`)
-    .setFooter("Cliquez sur le pouce si tout est correct!")
+    .setFooter({text: "Cliquez sur le pouce si tout est correct!"})
     .setColor(color)
 
     const confirmstart = await adminchannel.send({embeds: [confirmGame]})
@@ -2370,7 +2378,7 @@ bot.on('message', async (message) => {
 
   else if(cmd == "jail") {
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
-    if(!message.member.roles._roles.has(vivant)) return message.channel.send({embeds: [tpasvivant]})
+    if(!message.member.roles.member._roles.includes(vivant)) return message.channel.send({embeds: [tpasvivant]})
     if(author.interface == message.channel.id) {
       if(author.role.name == "Jailor") {
         let joueurvisé = ""
@@ -2480,7 +2488,7 @@ bot.on('message', async (message) => {
 
   else if(cmd == "reveal") {
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
-    if(!message.member.roles._roles.has(vivant)) return message.channel.send({embeds: [tpasvivant]})
+    if(!message.member.roles.member._roles.includes(vivant)) return message.channel.send({embeds: [tpasvivant]})
     if(author.interface == message.channel.id) {
       if(author.role.name == "Maire") {
         if(author.role.isreveal == false) {
@@ -2515,7 +2523,7 @@ bot.on('message', async (message) => {
           .setColor(color)]})
         }
       }else{
-        message.deleted()
+        message.delete()
         message.channel.send({embeds: [new EmbedBuilder()
         .setDescription("Tu n'est pas le **Maire!**")
         .setColor(color)]}).then((sent) => {
@@ -2525,7 +2533,7 @@ bot.on('message', async (message) => {
         });
       }      
     }else{
-      message.deleted()
+      message.delete()
       message.channel.send({embeds: [new EmbedBuilder()
       .setDescription("Vas dans ton interface!")
       .setColor(color)]}).then((sent) => {
@@ -2586,42 +2594,42 @@ bot.on('message', async (message) => {
         }
       }
       
-      jailedChan.updateOverwrite(
+      jailedChan.permissionOverwrites.edit(
         player.id,
-        {"VIEW_CHANNEL": null}
+        {"ViewChannel": null}
       )
       if(player.role.alignement == "Mafia Support" || player.role.alignement == "Mafia Killing" || player.role.alignement == "Mafia Deception") {
-        mafiaChan.updateOverwrite(
+        mafiaChan.permissionOverwrites.edit(
           player.id,
-          {"VIEW_CHANNEL": true, "SEND_MESSAGES": false}
+          {"ViewChannel": true, "SendMessages": false}
         )
       }else if(player.role.name == "Vampire") {
-        vampirechan.updateOverwrite(
+        vampirechan.permissionOverwrites.edit(
           player.id,
-          {"VIEW_CHANNEL": true, "SEND_MESSAGES": false}
+          {"ViewChannel": true, "SendMessages": false}
         )
       }else if(player.role.name == "Vampire-Hunter") {
-        observatoirechan.updateOverwrite(
+        observatoirechan.permissionOverwrites.edit(
           player.id,
-          {"VIEW_CHANNEL": true, "SEND_MESSAGES": false}
+          {"ViewChannel": true, "SendMessages": false}
         )
       }else if(player.role.alignement == "Coven Evil") {
-        covenchan.updateOverwrite(
+        covenchan.permissionOverwrites.edit(
           player.id,
-          {"VIEW_CHANNEL": true, "SEND_MESSAGES": false}
+          {"ViewChannel": true, "SendMessages": false}
         )  
       } 
     });
 
     if(partie.traitor == true) {
-      mafiaChan.updateOverwrite(
+      mafiaChan.permissionOverwrites.edit(
         partie.traitre.id,
-        {VIEW_CHANNEL: true, SEND_MESSAGES: false}
+        {ViewChannel: true, SendMessages: false}
       )
     }
 
     pendChan.send({embeds: [new EmbedBuilder()
-    .setDescription(`**${Math.floor((alive().length + votemaire) / 2) + 1}** votes sont nécéssaire pour pendre aujourd'hui.`)
+    .setDescription(`**${Math.floor((alive().length + votemaire) / 2) + 1}** votes sont nécessaire pour pendre aujourd'hui.`)
     .setColor(color)]})
     pendChan.send({embeds: [resultsVotes.setDescription("Aucun vote pour le moment")]}).then(message => {
       resultID = message.id;
@@ -2644,7 +2652,7 @@ bot.on('message', async (message) => {
     .setColor(color)
 
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
-    if(!message.member.roles._roles.has(vivant)) return message.channel.send({embeds: [tpasvivant]})
+    if(!message.member.roles.member._roles.includes(vivant)) return message.channel.send({embeds: [tpasvivant]})
     if(message.channel.name != pendChan.name) return message.channel.send({embeds: [pendrChan]})
     if(partie.numJour == 0) return message.channel.send({embeds: [jour0]})
 
@@ -2656,10 +2664,10 @@ bot.on('message', async (message) => {
       }
     }else{
       if(message.mentions.members.first().id == message.author.id) return message.channel.send({embeds: [new EmbedBuilder()
-      .setDescription("Tu ne peut pas voter pour toi même")
+      .setDescription("Tu ne peux pas voter pour toi même")
       .setColor(color)]})
-      if(!taggedUser[0].roles.cache.has(vivant)) return message.channel.send({embeds: [pasVivant]})
-      if(!taggedUser[0]) return message.channel.send({embeds: [trouvePas]})
+      if(!taggedUser.first().roles.cache.has(vivant)) return message.channel.send({embeds: [pasVivant]})
+      if(!taggedUser) return message.channel.send({embeds: [trouvePas]})
 
       if(author.role.name == "Maire" && author.role.isreveal == true) {
         if(!author.hasVoted) {
@@ -2831,45 +2839,39 @@ bot.on("messageReactionAdd", async (reaction, user) => {
             reactoradd.roles.remove(spec)
             reactor.number = numjoueur + 1
             numjoueur ++
-
             let messainter = new EmbedBuilder()
             .setDescription(`Salut <@${reactor.id}>! Ceci est ton interface avec le jeu. Je m'explique. Ici tu auras la description de ton rôle, et tu pourras écrire tes ` + 
             "actions que tu veux effectuer dans la nuit. De plus, tu pourras poser toutes tes questions par rapport au fonctionnement du jeu. Finalement, " + 
             "tu peux écrire ici un last will qui sera révélé à tout le monde lors de ta mort. Ce channel sera vidé chaque jour à l'exception de ce message, " +
             "de ta description de rôle, ainsi que de ton last will.")
             .setColor(color)
-
             let interfaces = reactor.displayname
-            reaction.message.guild.channels.create(interfaces + " Interface",{type:"text",})
-            .then((channel) => {
-              channel.setParent(parentInterface)
-              channel.overwritePermissions([
+            reaction.message.guild.channels.create({name: interfaces + " Interface", parent: parentInterface, topic: `<@&${godId}> pour avoir de l'aide direct`, permissionOverwrites: [
               {
-                id: channel.guild.id,
-                deny: ['VIEW_CHANNEL'],
+                id: reaction.message.guild.id,
+                deny: ['ViewChannel'],
               },
               {
                 id: vivant,
-                deny: ['VIEW_CHANNEL'],
+                deny: ['ViewChannel'],
               },{
                 id: reactor.id,
-                allow: ['VIEW_CHANNEL'],
+                allow: ['ViewChannel'],
               },{
                 id: spec,
-                allow: ['VIEW_CHANNEL'],
-                deny: ['SEND_MESSAGES'],
+                allow: ['ViewChannel'],
+                deny: ['SendMessages'],
               },{
-                id: godId,
-                allow: ['VIEW_CHANNEL']
+                id: mort,
+                deny: ['ViewChannel'],
               }
-              ])
-              .then(setTimeout(() => {
-                channel.send({embeds: [messainter]})
-              }, 1500))
+            ]}).then(channel => {
               reactor.interface = channel.id
               partie.interfaces.push(channel.id)
-              channel.setTopic(`<@&${godId}> pour avoir de l'aide direct`)
-              })
+              setTimeout(() => {
+                channel.send({embeds: [messainter]})
+              }, 1500);
+            })
 
             if(alive().length == nbrJoueurMax){
               partie.isStarted = true
@@ -2919,9 +2921,9 @@ bot.on("messageReactionAdd", async (reaction, user) => {
       }
     }
   }
-
+  
   else if(reaction.message.channel == adminchannel) {
-    if(reaction.message.id != adminchannel.lastMessageID) return
+    if(reaction.message.id != adminchannel.lastMessageId) return
     if(reaction.emoji.name == "👍") {
       if(partie.commencer == false) {
         start = true
@@ -2942,7 +2944,7 @@ bot.on("messageReactionAdd", async (reaction, user) => {
           .setColor(color)]})
         }
   
-        const reactionMessage = await qvjChan.send({embeds: [messageJouer]})
+        const reactionMessage = await qvjChan.send(messageJouer)
           await reactionMessage.react(turtleId)
           await reactionMessage.react(eyesId)  
       }
