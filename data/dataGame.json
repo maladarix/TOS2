@@ -1,1 +1,1 @@
-{"gamemode":null,"isStarted":false,"listeRoles":[],"persoNom":"","PersoGm":[],"time":"nuit","fullMoon":false,"coven":false,"jour":0,"HeureResults":null}
+{"commencer":false,"gamemode":null,"isStarted":false,"listeroles":[],"personom":"","persoGm":[],"time":"nuit","fullmoon":false,"coven":false,"traitor":false,"HeureResults":"","whispersChannels":[],"whispmaire":[],"traitre":null,"jailed":"","killed":null,"interfaces":[],"joueurCoven":[],"numJour":-1,"numNuit":0,"nbWhispJour":1,"nbMsgWhisp":30}

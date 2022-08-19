@@ -1,22 +1,18 @@
 {
-  "name": "tos2",
+  "name": "townofsalem",
   "version": "1.0.0",
-  "description": "TOS V2",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/maladarix/TOS2.git"
-  },
   "author": "Maladarix",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/maladarix/TOS2/issues"
-  },
-  "homepage": "https://github.com/maladarix/TOS2#readme",
   "dependencies": {
-    "discord.js": "^12.0.1"
+    "discord.js": "^14.2.0",
+    "dotenv": "^8.2.0",
+    "fs": "*",
+    "mongoose": "^5.11.14",
+    "mysql": "^2.18.1"
   }
 }
