@@ -1,6 +1,6 @@
 const Discord = require("discord.js")
 const bot = new Discord.Client({intents: 3276799})
-const {SlashCommandBuilder, EmbedBuilder, ChannelType} = require('discord.js')
+const {EmbedBuilder, ActionRow, SelectMenuBuilder} = require('discord.js')
 
 const Commands = require('./src/commands.js');
 const Player = require('./src/player.js');
@@ -123,7 +123,7 @@ let trouvePas = new EmbedBuilder()
 .setColor(color)
 
 let pastoi = new EmbedBuilder()
-.setDescription("Tu ne peut pas te whispe toi même")
+.setDescription("Tu ne peux pas te whispe toi-même")
 .setColor(color)
 
 let pasVivant = new EmbedBuilder()
@@ -131,7 +131,7 @@ let pasVivant = new EmbedBuilder()
 .setColor(color)
 
 let tpasvivant = new EmbedBuilder()
-.setDescription("Tu n'est pas vivant")
+.setDescription("Tu n'es pas vivant")
 .setColor(color)
 
 let nuitembed = new EmbedBuilder()
@@ -270,7 +270,8 @@ var processVote = function() {
         targetedPlayer.push(player) 
       }
     }
-  });  
+  });
+
   if(targetedPlayer.length == alive().length) {
     return bot.channels.cache.get(panchanid).send({embeds: [new EmbedBuilder()
     .setDescription("Il n'y a pas eu de vote aujourd'hui")
@@ -314,9 +315,6 @@ var arrToString = function (arr) {
 setInterval( //!résults automatique
   () => {
     if(partie.numJour == 0 || partie.numJour == -1) return
-    console.log(new Date().toUTCString().split(" ")[4])
-    console.log(partie.HeureResults)
-    console.log('==========')
     if(new Date().toUTCString().split(" ")[4] == partie.HeureResults) {
       processVote()
     }
@@ -431,7 +429,7 @@ bot.on("messageCreate", async (message) => {
                   element.author.actionsRemaining --
                   resultsactions.push({player : `${element.author.name}`, message : `Il vous reste ${element.author.actionsRemaining} alerte.`})
                 }else{
-                  resultsactions.push({player : `${element.author.name}` , message : `Votre action a échoué. Vous naviez plus d'alerte.`})
+                  resultsactions.push({player : `${element.author.name}` , message : `Votre action a échoué. Vous n'aviez plus d'alerte.`})
                 }
                 break;
               case "transport" :
@@ -1170,7 +1168,7 @@ bot.on("messageCreate", async (message) => {
         kill(tagged)
       }else if(args[1] == "cleaned") {
         alive().forEach(player => {
-          if(player.role.name == "Consierge") {
+          if(player.role.name == "Concierge") {
             if(tagged.lastwill == null) {
               message.guild.channels.cache.get(player.interface).send({embeds: [new EmbedBuilder()
               .setDescription(`**${tagged.displayname}** n'a pas de lastwill`)
@@ -1356,7 +1354,7 @@ bot.on("messageCreate", async (message) => {
             } 
         }else{
           message.channel.send({embeds: [new EmbedBuilder()
-          .setDescription("Ce joueur est déja dans la partie!")
+          .setDescription("Ce joueur est déjà dans la partie!")
           .setColor(color)]})
         }  
       }  
@@ -1449,9 +1447,9 @@ bot.on("messageCreate", async (message) => {
 
     if(partie.coven == true) {
       if(partie.numNuit == 1) {
-        villagechan.send("2 nuits avant que les coven aient le **Necronomicon**")
+        villagechan.send("2 nuits avant que les coven ait le **Necronomicon**")
       }else if(partie.numNuit == 2) {
-        villagechan.send("1 nuit avant que les coven aient le **Necronomicon**")
+        villagechan.send("1 nuit avant que les coven ait le **Necronomicon**")
       }else if(partie.numNuit >= 3) {
         if(partie.numNuit == 3) {
           villagechan.send("Les coven ont maintenant le **Necronomicon**")  
@@ -1723,7 +1721,7 @@ bot.on("messageCreate", async (message) => {
           {name:"**Allignement**", value: player.role.alignement},
           {name:"**Description**", value: player.role.description},
           {name:"**Commande**", value: player.role.command},
-          {name:"**Habiletée**", value: player.role.hab},
+          {name:"**Habileté**", value: player.role.hab},
           {name:"**Ta cible**", value: cible.displayname},
           {name:"**Gagnez avec**", value: player.role.winwith},
           {name:"**Plus d'info sur ton wiki**", value: player.role.wikiLink}
@@ -1754,7 +1752,7 @@ bot.on("messageCreate", async (message) => {
           {name:"**Allignement**", value: player.role.alignement},
           {name:"**Description**", value: player.role.description},
           {name:"**Commande**", value: player.role.command},
-          {name:"**Habiletée**", value: player.role.hab},
+          {name:"**Habileté**", value: player.role.hab},
           {name:"**Ta cible**", value: cible.displayname},
           {name:"**Gagnez avec**", value: player.role.winwith},
           {name:"**Plus d'info sur ton wiki**", value: player.role.wikiLink}
@@ -1771,7 +1769,7 @@ bot.on("messageCreate", async (message) => {
             {name:"**Allignement**", value: player.role.alignement},
             {name:"**Description**", value: player.role.description},
             {name:"**Commande**", value: player.role.command},
-            {name:"**Habiletée**", value: player.role.hab},
+            {name:"**Habileté**", value: player.role.hab},
             {name:"**Gagnez avec**", value: player.role.winwith},
             {name:"**Plus d'info sur ton wiki**", value: player.role.wikiLink}
           ])
@@ -1803,7 +1801,7 @@ bot.on("messageCreate", async (message) => {
     });
 
     adminchannel.send({embeds: [new EmbedBuilder()
-    .setTitle("**Liste des joueurs avec leurs roles**")
+    .setTitle("**Liste des joueurs avec leurs rôles**")
     .setDescription(arrToString(joueurroles))
     .setColor(color)]})
 
@@ -2052,7 +2050,7 @@ bot.on("messageCreate", async (message) => {
     .setColor(color)]})
     else{
       message.channel.send({embeds: [new EmbedBuilder()
-      .addFields({name:"Je ne trouve pas ce gamemode! Voici ce que tu peut **supprimé**: ", value: nomliste})
+      .addFields({name:"Je ne trouve pas ce gamemode! Voici ce que tu peux **supprimé**: ", value: nomliste})
       .setColor(color)]})
     }
   }
@@ -2419,7 +2417,7 @@ bot.on('messageCreate', async (message) => {
         }else{
           message.delete()
           message.channel.send({embeds: [new EmbedBuilder()
-          .setDescription("Ce n'est pas encole le **jour**!")
+          .setDescription("Ce n'est pas encore le **jour**!")
           .setColor(color)]}).then((sent) => {
             setTimeout(function () {
               sent.delete();
@@ -2429,7 +2427,7 @@ bot.on('messageCreate', async (message) => {
       }else{
         message.delete()
         message.channel.send({embeds: [new EmbedBuilder()
-        .setDescription("Tu n'est pas le **jailor**!")
+        .setDescription("Tu n'es pas le **jailor**!")
         .setColor(color)]}).then((sent) => {
           setTimeout(function () {
             sent.delete();
@@ -2439,7 +2437,7 @@ bot.on('messageCreate', async (message) => {
     }else{
       message.delete()
       message.channel.send({embeds: [new EmbedBuilder()
-      .setDescription("Tu ne peut pas faire cette commande ici")
+      .setDescription("Tu ne peux pas faire cette commande ici")
       .setColor(color)]}).then((sent) => {
         setTimeout(function () {
           sent.delete();
@@ -2493,7 +2491,7 @@ bot.on('messageCreate', async (message) => {
       if(author.role.name == "Maire") {
         if(author.role.isreveal == false) {
           message.channel.send({embeds: [new EmbedBuilder()
-          .setDescription("Tu as dévoiler ton rôle au village")
+          .setDescription("Tu as dévoilé ton rôle au village")
           .setColor(color)]})
 
           let usernameauth = ""
@@ -2525,7 +2523,7 @@ bot.on('messageCreate', async (message) => {
       }else{
         message.delete()
         message.channel.send({embeds: [new EmbedBuilder()
-        .setDescription("Tu n'est pas le **Maire!**")
+        .setDescription("Tu n'es pas le **Maire!**")
         .setColor(color)]}).then((sent) => {
           setTimeout(function () {
             sent.delete();
@@ -2652,6 +2650,7 @@ bot.on('messageCreate', async (message) => {
     .setColor(color)
 
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
+    if(partie.commencer == false) return message.channel.send({embeds: [pascomme]})
     if(!message.member.roles.member._roles.includes(vivant)) return message.channel.send({embeds: [tpasvivant]})
     if(message.channel.name != pendChan.name) return message.channel.send({embeds: [pendrChan]})
     if(partie.numJour == 0) return message.channel.send({embeds: [jour0]})
@@ -2664,7 +2663,7 @@ bot.on('messageCreate', async (message) => {
       }
     }else{
       if(message.mentions.members.first().id == message.author.id) return message.channel.send({embeds: [new EmbedBuilder()
-      .setDescription("Tu ne peux pas voter pour toi même")
+      .setDescription("Tu ne peux pas voter pour toi-même")
       .setColor(color)]})
       if(!taggedUser.first().roles.cache.has(vivant)) return message.channel.send({embeds: [pasVivant]})
       if(!taggedUser) return message.channel.send({embeds: [trouvePas]})
@@ -2673,20 +2672,20 @@ bot.on('messageCreate', async (message) => {
         if(!author.hasVoted) {
           tagged.votesFor += 3
           author.hasVoted = true
-          author.registeredVote = tagged
+          author.registeredVote = tagged.id
         }else{
           author.registeredVote.votesFor -= 3
-          author.registeredVote = tagged
+          author.registeredVote = tagged.id
           tagged.votesFor += 3
         }
       }else{
         if(!author.hasVoted) {
           tagged.votesFor ++
           author.hasVoted = true
-          author.registeredVote = tagged
+          author.registeredVote = tagged.id
         }else{
           author.registeredVote.votesFor --
-          author.registeredVote = tagged
+          author.registeredVote = tagged.id
           tagged.votesFor ++
         }  
       }
@@ -2801,7 +2800,7 @@ bot.on('messageCreate', async (message) => {
         }
       }else{
         message.channel.send({embeds: [new EmbedBuilder()
-        .setDescription("Tu n'est pas **Vivant**")
+        .setDescription("Tu n'es pas **Vivant**")
         .setColor(color)]}).then((sent) => {
           setTimeout(function () {
             sent.delete();
@@ -2840,7 +2839,7 @@ bot.on("messageReactionAdd", async (reaction, user) => {
             reactor.number = numjoueur + 1
             numjoueur ++
             let messainter = new EmbedBuilder()
-            .setDescription(`Salut <@${reactor.id}>! Ceci est ton interface avec le jeu. Je m'explique. Ici tu auras la description de ton rôle, et tu pourras écrire tes ` + 
+            .setDescription(`Salut <@${reactor.id}>! Ceci est ton interface avec le jeu. Je m'explique: Ici tu auras la description de ton rôle, et tu pourras écrire tes ` + 
             "actions que tu veux effectuer dans la nuit. De plus, tu pourras poser toutes tes questions par rapport au fonctionnement du jeu. Finalement, " + 
             "tu peux écrire ici un last will qui sera révélé à tout le monde lors de ta mort. Ce channel sera vidé chaque jour à l'exception de ce message, " +
             "de ta description de rôle, ainsi que de ton last will.")
