@@ -29,7 +29,7 @@ let genData = []
 let arrayId = []
 let guildId = ""
 
-let test = true
+let test = false
 
 if(test == false) {
   // serveur officiel
