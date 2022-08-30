@@ -365,9 +365,9 @@ bot.on("messageCreate", async (message) => {
         chan.send(`<@&${vivant}>, plus que 5 messages restants!`)
       }
       if(partie.whispersChannels[i].nb == 0) {
-        chan.permissionOverwrites.forEach(e => {
-          if(e.type == "member") {
-            e.update({"SendMessages": false})
+        chan.permissionOverwrites.cache.forEach(player => {
+          if(player.type == 1) {
+            player.edit({"SendMessages": false})
           }
         });
         message.channel.send({embeds: [new EmbedBuilder()
