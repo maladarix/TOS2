@@ -23,6 +23,7 @@ class Partie{
         this.numNuit = 0
         this.nbWhispJour = 1
         this.nbMsgWhisp = 30
+        this.votedone = false
     }
 }
 

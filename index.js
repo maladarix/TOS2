@@ -248,7 +248,6 @@ var kill = async function(died) {
   }
 
   let joueur = await bot.guilds.cache.get(guildId).members.fetch(died.id)
-  console.log(joueur)
   died.necro = false
   joueur.roles.add(mort)
   joueur.roles.add(spec)
@@ -302,6 +301,7 @@ var processVote = function() {
     .setDescription(desc)
     .setColor(color)]})
   }
+  partie.votedone = true
 }
 
 var arrToString = function (arr) {
@@ -1219,7 +1219,7 @@ bot.on("messageCreate", async (message) => {
   else if(cmd == "speak") {
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
     if(partie.time == "nuit") return message.channel.send({embeds: [nuitembed]})
-    if(!message.member.roles._roles.has(vivant)) return message.channel.send({embeds: [tpasvivant]})
+    if(!message.member.roles.member._roles.includes(vivant)) return message.channel.send({embeds: [tpasvivant]})
     villagechan.send(`<@${author.id}>: Je suis blackmailed`)
   }
 
@@ -2567,6 +2567,7 @@ bot.on('messageCreate', async (message) => {
     partie.time = "jour"
     partie.numJour ++
     partie.jailed = ""
+    partie.votedone = false
     actions = []
 
     villagechan.send(`<@&${vivant}>, Jour **${partie.numJour}**`)
@@ -2651,9 +2652,43 @@ bot.on('messageCreate', async (message) => {
 
     if(partie.isStarted == false) return message.channel.send({embeds: [pascomme]})
     if(partie.commencer == false) return message.channel.send({embeds: [pascomme]})
+    if(!tagged) return message.channel.send({embeds: [qui]})
     if(!message.member.roles.member._roles.includes(vivant)) return message.channel.send({embeds: [tpasvivant]})
     if(message.channel.name != pendChan.name) return message.channel.send({embeds: [pendrChan]})
     if(partie.numJour == 0) return message.channel.send({embeds: [jour0]})
+    if(partie.votedone == true) return message.channel.send({embeds: new EmbedBuilder()
+    .setDescription("Il es trop tard pour voter!")
+    .setColor(color)})
+
+      if(author.role.name == "Maire" && author.role.isreveal == true) {
+        if(!author.hasVoted) {
+          tagged.votesFor += 3
+          author.hasVoted = true
+          author.registeredVote = tagged.id
+        }else{
+          alive().forEach(player => {
+            if(author.registeredVote == player.id) {
+              player.votesFor -= 3
+            }
+          });
+          author.registeredVote = tagged.id
+          tagged.votesFor += 3
+        }
+      }else{
+        if(!author.hasVoted) {
+          tagged.votesFor ++
+          author.hasVoted = true
+          author.registeredVote = tagged.id
+        }else{
+          alive().forEach(player => {
+            if(author.registeredVote == player.id) {
+              player.votesFor --
+            }
+          });
+          author.registeredVote = tagged.id
+          tagged.votesFor ++
+        }  
+      }
 
     if(!args[0]) {
       if(author.hasVoted == true) {
@@ -2667,28 +2702,6 @@ bot.on('messageCreate', async (message) => {
       .setColor(color)]})
       if(!taggedUser.first().roles.cache.has(vivant)) return message.channel.send({embeds: [pasVivant]})
       if(!taggedUser) return message.channel.send({embeds: [trouvePas]})
-
-      if(author.role.name == "Maire" && author.role.isreveal == true) {
-        if(!author.hasVoted) {
-          tagged.votesFor += 3
-          author.hasVoted = true
-          author.registeredVote = tagged.id
-        }else{
-          author.registeredVote.votesFor -= 3
-          author.registeredVote = tagged.id
-          tagged.votesFor += 3
-        }
-      }else{
-        if(!author.hasVoted) {
-          tagged.votesFor ++
-          author.hasVoted = true
-          author.registeredVote = tagged.id
-        }else{
-          author.registeredVote.votesFor --
-          author.registeredVote = tagged.id
-          tagged.votesFor ++
-        }  
-      }
     }
 
     let listesVotes = ""
