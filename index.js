@@ -29,7 +29,7 @@ let genData = []
 let arrayId = []
 let guildId = ""
 
-let test = false
+let test = true
 
 if(test == false) {
   // serveur officiel
@@ -946,7 +946,6 @@ bot.on("messageCreate", async (message) => {
     if(start == true) return message.channel.send({embeds: [commencee]})
     if(!args[0]) return message.channel.send("Quelle heure?")
     let offset = 4
-    console.log(new Date().getTimezoneOffset())
     if(new Date().getTimezoneOffset() == 0) {
       offset = 4
     }
@@ -2557,7 +2556,7 @@ bot.on('messageCreate', async (message) => {
       args.forEach(mots => {
         messagejour += mots + " "
       });
-      gameannoncchan.send({embeds: [messagejour]})
+      gameannoncchan.send(messagejour)
       
     }
     actions.forEach(action => {
