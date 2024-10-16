@@ -29,7 +29,7 @@ let genData = []
 let arrayId = []
 let guildId = ""
 
-let test = true
+let test = false
 
 if(test == false) {
   // serveur officiel
@@ -1287,10 +1287,10 @@ bot.on("messageCreate", async (message) => {
             commands.prototype.getAllRoles().forEach(role => {
               if(role.name == args[1]){
                 tagged.scroll = role
-                message.react("👍")
               }
-            });  
+            });
           }
+          message.react("👍")
         }
       }
     });
@@ -2648,7 +2648,7 @@ bot.on('messageCreate', async (message) => {
       resultID = message.id;
     })
 
-    await clearJail(jailedChan);
+    await clearChan(jailedChan);
   }
 
   else if(cmd == "p") {
@@ -2876,8 +2876,7 @@ bot.on("messageReactionAdd", async (reaction, user) => {
               {
                 id: reaction.message.guild.id,
                 deny: ['ViewChannel'],
-              },
-              {
+              },{
                 id: vivant,
                 deny: ['ViewChannel'],
               },{

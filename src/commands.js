@@ -653,7 +653,7 @@ class commands{
   }
 
   getLoup(){
-    if(ggameroles.some(role => role.name == "Loup-Garou")) {
+    if(gameroles.some(role => role.name == "Loup-Garou")) {
       this.getRandomNeutral()
     }else{
       gameroles.push(roles.prototype.getWerewolf())

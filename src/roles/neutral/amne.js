@@ -2,7 +2,7 @@ const Action = require('../../action')
 
 class amne {
     constructor(){
-        this.name = "Amnésiac"
+        this.name = "Amnesiac"
         this.description = "Vous êtes un patient de l’hôpital psychiatrique qui ne se rappelle pas qui il est."
         this.isUnique = false
         this.needsTwoTargets = false
